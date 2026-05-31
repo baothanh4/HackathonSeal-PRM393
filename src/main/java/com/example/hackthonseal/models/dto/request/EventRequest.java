@@ -1,6 +1,7 @@
 package com.example.hackthonseal.models.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.example.hackthonseal.validation.deserializer.IsoUtcLocalDateTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,11 +24,11 @@ public class EventRequest {
     private String location;
 
     @NotNull(message = "Start time is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonDeserialize(using = IsoUtcLocalDateTimeDeserializer.class)
     private LocalDateTime startTime;
 
     @NotNull(message = "End time is required")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonDeserialize(using = IsoUtcLocalDateTimeDeserializer.class)
     private LocalDateTime endTime;
 
     private String imageUrl;

@@ -2,9 +2,11 @@ package com.example.hackthonseal.exception;
 
 import com.example.hackthonseal.models.Enum.ErrorCode;
 import com.example.hackthonseal.models.dto.response.ErrorResponse;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -42,7 +44,30 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(ErrorCode.INTERNAL_SERVER_ERROR.getCode())
+                .errorCode(ErrorCode.INVALID_EMAIL_FORMAT.getCode())
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        log.error("JSON parsing error: {}", ex.getMessage());
+
+        String message = "Invalid request format";
+        if (ex.getCause() instanceof InvalidFormatException ife) {
+            message = "Invalid " + ife.getPath().stream()
+                    .map(ref -> ref.getFieldName())
+                    .reduce((a, b) -> a + "." + b)
+                    .orElse("field") + ": " + ife.getOriginalMessage();
+        }
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(ErrorCode.INVALID_EMAIL_FORMAT.getCode())
                 .message(message)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -58,7 +83,7 @@ public class GlobalExceptionHandler {
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(ErrorCode.INTERNAL_SERVER_ERROR.getCode())
-                .message("An unexpected error occurred")
+                .message("An unexpected error occurred: " + ex.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -67,36 +92,13 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
-    /**
-     * Map error codes to appropriate HTTP status codes
-     * 
-     * HTTP Status Codes:
-     * - 400 Bad Request: Invalid input, validation errors
-     * - 401 Unauthorized: Authentication failed
-     * - 403 Forbidden: User doesn't have permission
-     * - 404 Not Found: Resource not found
-     * - 409 Conflict: Email/Student Code already exists
-     * - 500 Internal Server Error: Unexpected errors
-     */
     private HttpStatus getHttpStatus(String errorCode) {
         return switch (errorCode) {
-            // 401 Unauthorized - Authentication errors
-            case "401" -> HttpStatus.UNAUTHORIZED;  // Invalid email or password
-            case "403" -> HttpStatus.FORBIDDEN;     // Account not approved
-             // Unauthorized
-            
-            // 409 Conflict - Resource already exists
-            case "409" -> HttpStatus.CONFLICT;      // Email already exists
-                  // Student code already exists
-            
-            // 400 Bad Request - Validation errors
-            case "400" -> HttpStatus.BAD_REQUEST;   // Invalid email format
-                // Student code invalid
-            
-            // 404 Not Found
+            case "401" -> HttpStatus.UNAUTHORIZED;
+            case "403" -> HttpStatus.FORBIDDEN;
+            case "409" -> HttpStatus.CONFLICT;
+            case "400" -> HttpStatus.BAD_REQUEST;
             case "404" -> HttpStatus.NOT_FOUND;
-            
-            // 500 Internal Server Error - Default for unknown errors
             case "500" -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
