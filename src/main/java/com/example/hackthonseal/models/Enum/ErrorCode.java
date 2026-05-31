@@ -21,6 +21,12 @@ public enum ErrorCode {
     STUDENT_CODE_INVALID("400", "Student code is invalid"),
     STUDENT_CODE_ALREADY_EXISTS("400", "Student code already exists"),
 
+    // Event Errors
+    EVENT_NOT_FOUND("404", "Event not found"),
+    EVENT_ALREADY_CANCELLED("400", "Event is already cancelled"),
+    EVENT_END_BEFORE_START("400", "End time must be after start time"),
+    EVENT_START_IN_PAST("400", "Start time must be in the future"),
+
     // General Errors
     INTERNAL_SERVER_ERROR("500", "Internal server error"),
     RESOURCE_NOT_FOUND("404", "Resource not found"),
