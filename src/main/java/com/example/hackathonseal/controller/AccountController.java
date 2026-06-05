@@ -4,9 +4,11 @@ import com.example.hackathonseal.exception.AppException;
 import com.example.hackathonseal.models.Enum.AccountStatus;
 import com.example.hackathonseal.models.Enum.ErrorCode;
 import com.example.hackathonseal.models.dto.request.AccountStatusRequest;
+import com.example.hackathonseal.models.dto.request.AdminCreateUserRequest;
 import com.example.hackathonseal.models.dto.response.UserAdminResponse;
 import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.repo.UserRepository;
+import com.example.hackathonseal.services.Interface.AdminUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/admin/users")
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
 
     private final UserRepository userRepository;
+    private final AdminUserService adminUserService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('COORDINATOR')")
@@ -62,28 +66,20 @@ public class AccountController {
         return ResponseEntity.ok(resp);
     }
 
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create an internal user account")
+    public ResponseEntity<UserAdminResponse> createUser(@Valid @RequestBody AdminCreateUserRequest request) {
+        UserAdminResponse resp = adminUserService.createUser(request);
+        return ResponseEntity.ok(resp);
+    }
+
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update account status (APPROVE/REJECT/SUSPEND)")
     public ResponseEntity<UserAdminResponse> updateStatus(@PathVariable Long id, @RequestBody AccountStatusRequest request) {
-        User u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-        try {
-            AccountStatus newStatus = AccountStatus.valueOf(request.getStatus().toUpperCase());
-            u.setStatus(newStatus);
-            userRepository.save(u);
-
-            UserAdminResponse resp = UserAdminResponse.builder()
-                    .id(u.getId())
-                    .email(u.getEmail())
-                    .fullName(u.getFullName())
-                    .role(u.getRole() != null ? u.getRole().name() : null)
-                    .status(u.getStatus() != null ? u.getStatus().name() : null)
-                    .createdAt(u.getCreatedAt())
-                    .build();
-            return ResponseEntity.ok(resp);
-        } catch (IllegalArgumentException ex) {
-            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Invalid account status: " + request.getStatus());
-        }
+        UserAdminResponse resp = adminUserService.updateStatus(id, request);
+        return ResponseEntity.ok(resp);
     }
 }
 
