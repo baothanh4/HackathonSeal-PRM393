@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+# Ignore actual .env (contains secrets)
+.env
+# Keep the example template in git
+!.env.example
