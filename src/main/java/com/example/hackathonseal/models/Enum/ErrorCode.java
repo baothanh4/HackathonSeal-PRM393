@@ -32,7 +32,18 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR("500", "Internal server error"),
     RESOURCE_NOT_FOUND("404", "Resource not found"),
     UNAUTHORIZED("401", "Unauthorized"),
-    ACCESS_DENIED("403", "Access denied");
+    ACCESS_DENIED("403", "Access denied"),
+
+    // Email Verification Errors
+    EMAIL_NOT_VERIFIED("403", "Please verify your email before logging in"),
+    EMAIL_ALREADY_VERIFIED("400", "Email is already verified"),
+    INVALID_VERIFICATION_TOKEN("400", "Invalid or expired email verification token"),
+
+    // Password Reset Errors
+    INVALID_RESET_TOKEN("400", "Invalid or expired password reset token"),
+    RESET_TOKEN_ALREADY_USED("400", "This reset link has already been used"),
+    USER_NOT_FOUND("404", "User not found with given email");
+
 
     private final String code;
     private final String message;
