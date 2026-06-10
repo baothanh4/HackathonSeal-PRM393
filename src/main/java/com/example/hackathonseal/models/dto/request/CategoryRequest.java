@@ -6,9 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TeamRequest {
-    @NotBlank(message = "Team name is required")
+public class CategoryRequest {
+    @NotBlank(message = "Category name is required")
     private String name;
 
-    private Long categoryId;
+    private String description;
 }

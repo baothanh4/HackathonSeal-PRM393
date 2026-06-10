@@ -19,6 +19,8 @@ public class TeamResponse {
     private Long eventId;
     private Long leaderId;
     private String leaderName;
+    private Long categoryId;
+    private String categoryName;
     private long memberCount;
     private List<TeamMemberResponse> members;
 }
