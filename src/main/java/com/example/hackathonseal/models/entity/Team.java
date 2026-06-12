@@ -24,6 +24,10 @@ public class Team {
     private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
     private User leader;
 }

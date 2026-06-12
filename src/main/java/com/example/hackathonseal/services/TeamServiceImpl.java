@@ -6,10 +6,12 @@ import com.example.hackathonseal.models.dto.request.TeamRequest;
 import com.example.hackathonseal.models.dto.response.TeamMemberResponse;
 import com.example.hackathonseal.models.dto.response.TeamResponse;
 import com.example.hackathonseal.models.entity.Event;
+import com.example.hackathonseal.models.entity.Category;
 import com.example.hackathonseal.models.entity.EventRegistration;
 import com.example.hackathonseal.models.entity.Team;
 import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.models.entity.UserProfile;
+import com.example.hackathonseal.repo.CategoryRepository;
 import com.example.hackathonseal.repo.EventRegistrationRepository;
 import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.TeamRepository;
@@ -31,6 +33,7 @@ public class TeamServiceImpl implements TeamService {
     private final EventRepository eventRepository;
     private final EventRegistrationRepository registrationRepository;
     private final UserProfileRepository userProfileRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     @Transactional
@@ -60,10 +63,20 @@ public class TeamServiceImpl implements TeamService {
             throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "You are already a member of a team in this event");
         }
 
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+            if (!category.getEvent().getId().equals(event.getId())) {
+                throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+            }
+        }
+
         Team team = Team.builder()
                 .name(request.getName())
                 .event(event)
                 .leader(currentUser)
+                .category(category)
                 .build();
 
         team = teamRepository.save(team);
@@ -216,6 +229,8 @@ public class TeamServiceImpl implements TeamService {
                 .eventId(team.getEvent().getId())
                 .leaderId(team.getLeader().getId())
                 .leaderName(team.getLeader().getFullName())
+                .categoryId(team.getCategory() != null ? team.getCategory().getId() : null)
+                .categoryName(team.getCategory() != null ? team.getCategory().getName() : null)
                 .memberCount(members.size())
                 .members(members)
                 .build();
