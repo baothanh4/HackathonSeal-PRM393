@@ -7,6 +7,6 @@ import com.example.hackathonseal.models.entity.User;
 import java.util.List;
 
 public interface EvaluationService {
-    EvaluationResponse evaluateSubmission(Long eventId, Long submissionId, EvaluationRequest request, User currentUser);
+    List<EvaluationResponse> evaluateSubmission(Long eventId, Long submissionId, EvaluationRequest request, User currentUser);
     List<EvaluationResponse> getEvaluationsBySubmission(Long eventId, Long submissionId, User currentUser);
 }

@@ -14,8 +14,13 @@ public class EvaluationResponse {
     private Long submissionId;
     private Long judgeId;
     private String judgeName;
-    private Integer score;
+    private Long criterionId;
+    private String criterionName;
+    private Double scoreValue;
     private String feedback;
-    private LocalDateTime createdAt;
+    private String internalNote;
+    private Boolean isCalibration;
+    private Boolean isFinalized;
+    private LocalDateTime evaluatedAt;
     private LocalDateTime updatedAt;
 }

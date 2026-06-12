@@ -8,6 +8,8 @@ import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.repo.UserRepository;
 import com.example.hackathonseal.services.Interface.AdminUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +39,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .fullName(request.getFullName().trim())
                 .role(request.getRole())
                 .status(status)
-                .isEmailVerified(false)
+                .isEmailVerified(true)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -72,6 +74,32 @@ public class AdminUserServiceImpl implements AdminUserService {
         } catch (IllegalArgumentException ex) {
             throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Invalid account status: " + request.getStatus());
         }
+    }
+
+    @Override
+    public Page<UserAdminResponse> listUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(u -> UserAdminResponse.builder()
+                        .id(u.getId())
+                        .email(u.getEmail())
+                        .fullName(u.getFullName())
+                        .role(u.getRole() != null ? u.getRole().name() : null)
+                        .status(u.getStatus() != null ? u.getStatus().name() : null)
+                        .createdAt(u.getCreatedAt())
+                        .build());
+    }
+
+    @Override
+    public UserAdminResponse getUser(Long id) {
+        User u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
+        return UserAdminResponse.builder()
+                .id(u.getId())
+                .email(u.getEmail())
+                .fullName(u.getFullName())
+                .role(u.getRole() != null ? u.getRole().name() : null)
+                .status(u.getStatus() != null ? u.getStatus().name() : null)
+                .createdAt(u.getCreatedAt())
+                .build();
     }
 }
 

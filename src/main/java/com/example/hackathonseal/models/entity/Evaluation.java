@@ -26,18 +26,36 @@ public class Evaluation {
     @JoinColumn(name = "judge_id", nullable = false)
     private User judge;
 
-    @Column(nullable = false)
-    private Integer score;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "criterion_id", nullable = false)
+    private EventCriteria criterion;
+
+    @Column(name = "score_value")
+    private Double scoreValue;
 
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
-    private LocalDateTime createdAt;
+    @Column(name = "internal_note", columnDefinition = "TEXT")
+    private String internalNote;
+
+    @Column(name = "is_calibration")
+    @Builder.Default
+    private Boolean isCalibration = false;
+
+    @Column(name = "is_finalized")
+    @Builder.Default
+    private Boolean isFinalized = false;
+
+    @Column(name = "evaluated_at")
+    private LocalDateTime evaluatedAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        evaluatedAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
