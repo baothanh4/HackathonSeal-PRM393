@@ -25,8 +25,8 @@ public class EvaluationController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Submit score and feedback for a submission. Only assigned Judges or ADMIN/COORDINATOR")
-    public ResponseEntity<EvaluationResponse> evaluate(
+    @Operation(summary = "Submit scores and feedback for a submission. Only assigned Judges or ADMIN/COORDINATOR")
+    public ResponseEntity<List<EvaluationResponse>> evaluate(
             @PathVariable Long eventId,
             @PathVariable Long submissionId,
             @Valid @RequestBody EvaluationRequest request,
@@ -37,7 +37,7 @@ public class EvaluationController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get all evaluations for a submission. Only accessible by Judges assigned to Category, or ADMIN/COORDINATOR")
+    @Operation(summary = "Get evaluations for a submission. Organizers see all, Judges see their own.")
     public ResponseEntity<List<EvaluationResponse>> getEvaluations(
             @PathVariable Long eventId,
             @PathVariable Long submissionId,
