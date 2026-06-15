@@ -5,6 +5,7 @@ import com.example.hackathonseal.validation.annotation.ValidFullName;
 import com.example.hackathonseal.validation.annotation.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +25,7 @@ public class RegisterRequest {
     @ValidPassword
     private String password;
 
-    @NotBlank(message = "Participant type is required")
+    @NotNull(message = "Participant type is required")
     private ParticipantType participantType;
 
     private String universityName;
