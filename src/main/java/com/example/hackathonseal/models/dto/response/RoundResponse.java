@@ -17,5 +17,6 @@ public class RoundResponse {
     private Integer orderIndex;
     private LocalDateTime submissionDeadline;
     private Boolean isActive;
+    private Integer advancementCount;
 }
 

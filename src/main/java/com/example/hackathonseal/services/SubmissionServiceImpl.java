@@ -14,6 +14,7 @@ import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.RoundRepository;
 import com.example.hackathonseal.repo.SubmissionRepository;
 import com.example.hackathonseal.repo.TeamRepository;
+import com.example.hackathonseal.services.Interface.RankingService;
 import com.example.hackathonseal.services.Interface.SubmissionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final TeamRepository teamRepository;
     private final RoundRepository roundRepository;
     private final SubmissionRepository submissionRepository;
+    private final RankingService rankingService;
 
     @Override
     @Transactional
@@ -46,6 +48,11 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         if (round.getEvent() == null || !round.getEvent().getId().equals(event.getId())) {
             throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round does not belong to event");
+        }
+
+        // check advancement eligibility
+        if (!rankingService.isTeamEligibleForRound(team, round)) {
+            throw new AppException(ErrorCode.ACCESS_DENIED, "Your team has been eliminated or did not advance to this round.");
         }
 
         // check permission: only team leader or admin can submit

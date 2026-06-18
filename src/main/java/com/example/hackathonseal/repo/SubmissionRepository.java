@@ -10,5 +10,6 @@ import java.util.List;
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByTeamId(Long teamId);
     List<Submission> findByRoundId(Long roundId);
+    List<Submission> findByTeamIdAndRoundId(Long teamId, Long roundId);
 }
 
