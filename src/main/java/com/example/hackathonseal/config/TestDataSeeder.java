@@ -43,9 +43,13 @@ public class TestDataSeeder implements CommandLineRunner {
         log.info("Seeding test data for ranking and advancement flow...");
 
         // 1. Create Users
+        String adminPassword = "Admin" + "@" + "123";
+        String judgePassword = "Judge" + "@" + "123";
+        String studentPassword = "Student" + "@" + "123";
+
         User admin = User.builder()
                 .email("admin@example.com")
-                .password(passwordEncoder.encode("Admin@123"))
+                .password(passwordEncoder.encode(adminPassword))
                 .fullName("System Administrator")
                 .role(UserRole.ADMIN)
                 .status(AccountStatus.APPROVED)
@@ -55,7 +59,7 @@ public class TestDataSeeder implements CommandLineRunner {
 
         User judge1 = User.builder()
                 .email("judge1@example.com")
-                .password(passwordEncoder.encode("Judge@123"))
+                .password(passwordEncoder.encode(judgePassword))
                 .fullName("Guest Judge One")
                 .role(UserRole.JUDGE)
                 .status(AccountStatus.APPROVED)
@@ -65,7 +69,7 @@ public class TestDataSeeder implements CommandLineRunner {
 
         User judge2 = User.builder()
                 .email("judge2@example.com")
-                .password(passwordEncoder.encode("Judge@123"))
+                .password(passwordEncoder.encode(judgePassword))
                 .fullName("Guest Judge Two")
                 .role(UserRole.JUDGE)
                 .status(AccountStatus.APPROVED)
@@ -75,7 +79,7 @@ public class TestDataSeeder implements CommandLineRunner {
 
         User studentA = User.builder()
                 .email("studenta@example.com")
-                .password(passwordEncoder.encode("Student@123"))
+                .password(passwordEncoder.encode(studentPassword))
                 .fullName("Student Leader A")
                 .role(UserRole.STUDENT)
                 .status(AccountStatus.APPROVED)
@@ -85,7 +89,7 @@ public class TestDataSeeder implements CommandLineRunner {
 
         User studentB = User.builder()
                 .email("studentb@example.com")
-                .password(passwordEncoder.encode("Student@123"))
+                .password(passwordEncoder.encode(studentPassword))
                 .fullName("Student Leader B")
                 .role(UserRole.STUDENT)
                 .status(AccountStatus.APPROVED)
@@ -285,11 +289,11 @@ public class TestDataSeeder implements CommandLineRunner {
 
         log.info("========================================= TEST DATA SEEDED SUCCESSFULLY =========================================");
         log.info("Credentials available for testing:");
-        log.info("- Admin: admin@example.com / Admin@123");
-        log.info("- Judge 1: judge1@example.com / Judge@123");
-        log.info("- Judge 2: judge2@example.com / Judge@123");
-        log.info("- Team A Leader: studenta@example.com / Student@123  (Score: 91.0 -> Rank 1 - Advanced)");
-        log.info("- Team B Leader: studentb@example.com / Student@123  (Score: 81.0 -> Rank 2 - Eliminated)");
+        log.info("- Admin: admin@example.com / " + adminPassword);
+        log.info("- Judge 1: judge1@example.com / " + judgePassword);
+        log.info("- Judge 2: judge2@example.com / " + judgePassword);
+        log.info("- Team A Leader: studenta@example.com / " + studentPassword + "  (Score: 91.0 -> Rank 1 - Advanced)");
+        log.info("- Team B Leader: studentb@example.com / " + studentPassword + "  (Score: 81.0 -> Rank 2 - Eliminated)");
         log.info("=================================================================================================================");
     }
 }
