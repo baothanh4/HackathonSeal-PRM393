@@ -49,8 +49,8 @@ public class EvaluationServiceImpl implements EvaluationService {
             EventCriteria criterion = eventCriteriaRepository.findById(scoreReq.getCriterionId())
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion not found"));
 
-            if (!criterion.getEvent().getId().equals(eventId)) {
-                throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Criterion does not belong to this event");
+            if (!criterion.getRound().getId().equals(submission.getRound().getId())) {
+                throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Criterion does not belong to this round");
             }
             if (!criterion.getIsActive()) {
                 throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Criterion is not active");

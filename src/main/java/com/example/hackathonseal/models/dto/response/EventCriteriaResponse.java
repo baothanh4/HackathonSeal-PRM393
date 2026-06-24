@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class EventCriteriaResponse {
     private Long id;
     private Long eventId;
+    private Long roundId;
     private Long templateId;
     private String customName;
     private Double customWeight;

@@ -17,5 +17,11 @@ public class SubmissionResponse {
     private String githubUrl;
     private String status;
     private LocalDateTime submittedAt;
+
+    private String teamName;
+    private String trackName;
+    private String roundName;
+    private String eventName;
+    private Integer teamSize;
 }
 
