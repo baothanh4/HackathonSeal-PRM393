@@ -5,5 +5,6 @@ import com.example.hackathonseal.models.dto.response.SubmissionResponse;
 
 public interface SubmissionService {
     SubmissionResponse submit(Long eventId, Long teamId, Long roundId, SubmissionRequest request);
+    java.util.List<SubmissionResponse> getAllSubmissions();
 }
 

@@ -67,5 +67,17 @@ public class RegistrationController {
         Page<RegistrationResponse> participants = registrationService.listParticipants(eventId, pageable);
         return ResponseEntity.ok(participants);
     }
+
+    @GetMapping("/my-registrations")
+    @Operation(summary = "List current user's event registrations")
+    public ResponseEntity<Page<RegistrationResponse>> listMyRegistrations(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RegistrationResponse> registrations = registrationService.listUserRegistrations(currentUser, pageable);
+        return ResponseEntity.ok(registrations);
+    }
 }
 

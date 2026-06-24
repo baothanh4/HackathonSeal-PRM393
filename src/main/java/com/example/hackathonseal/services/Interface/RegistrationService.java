@@ -10,5 +10,7 @@ public interface RegistrationService {
     RegistrationResponse unregister(Long userId, Long eventId);
 
     Page<RegistrationResponse> listParticipants(Long eventId, Pageable pageable);
+
+    Page<RegistrationResponse> listUserRegistrations(com.example.hackathonseal.models.entity.User currentUser, Pageable pageable);
 }
 

@@ -156,6 +156,28 @@ public class RegistrationServiceImpl implements RegistrationService {
                 });
     }
 
+    @Override
+    public Page<RegistrationResponse> listUserRegistrations(User currentUser, Pageable pageable) {
+        if (currentUser == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "User must be authenticated");
+        }
+
+        return registrationRepository.findByUserAndActiveTrue(currentUser, pageable)
+                .map(reg -> {
+                    String studentCode = null;
+                    String university = "FPT University";
+                    Optional<UserProfile> profileOpt = userProfileRepository.findByUserId(reg.getUser().getId());
+                    if (profileOpt.isPresent()) {
+                        studentCode = profileOpt.get().getStudentCode();
+                        university = profileOpt.get().getUniversityName();
+                    }
+                    if (university == null || university.isBlank()) {
+                        university = "FPT University";
+                    }
+                    return mapToResponse(reg, studentCode, university);
+                });
+    }
+
     private RegistrationResponse mapToResponse(EventRegistration reg, String studentCode, String university) {
         RegistrationResponse.RegistrationResponseBuilder builder = RegistrationResponse.builder()
                 .registrationId(reg.getId())

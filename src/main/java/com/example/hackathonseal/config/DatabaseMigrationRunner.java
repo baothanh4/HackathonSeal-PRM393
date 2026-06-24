@@ -17,8 +17,9 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            log.info("Running custom database migration to drop deprecated 'score' column from evaluations table...");
+            log.info("Running custom database migration to drop deprecated columns...");
             jdbcTemplate.execute("ALTER TABLE evaluations DROP COLUMN IF EXISTS score;");
+            jdbcTemplate.execute("ALTER TABLE event_criteria DROP COLUMN IF EXISTS event_id;");
             log.info("Database migration completed successfully.");
         } catch (Exception e) {
             log.error("Failed to run database migration: {}", e.getMessage());

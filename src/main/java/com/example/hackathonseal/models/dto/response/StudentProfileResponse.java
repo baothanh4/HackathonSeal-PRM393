@@ -1,22 +1,22 @@
 package com.example.hackathonseal.models.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.example.hackathonseal.models.Enum.ParticipantType;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
-public class UserAdminResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class StudentProfileResponse {
     private Long id;
     private String email;
     private String fullName;
     private String role;
-    private String status;
-    private LocalDateTime createdAt;
+    private ParticipantType participantType;
     private String studentCode;
     private String universityName;
+    private LocalDateTime createdAt;
 }
-
