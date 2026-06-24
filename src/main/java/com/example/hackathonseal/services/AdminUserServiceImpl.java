@@ -5,7 +5,9 @@ import com.example.hackathonseal.models.Enum.ErrorCode;
 import com.example.hackathonseal.models.dto.request.AdminCreateUserRequest;
 import com.example.hackathonseal.models.dto.response.UserAdminResponse;
 import com.example.hackathonseal.models.entity.User;
+import com.example.hackathonseal.models.entity.UserProfile;
 import com.example.hackathonseal.repo.UserRepository;
+import com.example.hackathonseal.repo.UserProfileRepository;
 import com.example.hackathonseal.services.Interface.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,29 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileRepository userProfileRepository;
+
+    private UserAdminResponse mapToResponse(User user) {
+        String studentCode = null;
+        String universityName = null;
+
+        Optional<UserProfile> profileOpt = userProfileRepository.findByUserId(user.getId());
+        if (profileOpt.isPresent()) {
+            studentCode = profileOpt.get().getStudentCode();
+            universityName = profileOpt.get().getUniversityName();
+        }
+
+        return UserAdminResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole() != null ? user.getRole().name() : null)
+                .status(user.getStatus() != null ? user.getStatus().name() : null)
+                .createdAt(user.getCreatedAt())
+                .studentCode(studentCode)
+                .universityName(universityName)
+                .build();
+    }
 
     @Override
     public UserAdminResponse createUser(AdminCreateUserRequest request) {
@@ -45,14 +71,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         user = userRepository.save(user);
 
-        return UserAdminResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .status(user.getStatus() != null ? user.getStatus().name() : null)
-                .createdAt(user.getCreatedAt())
-                .build();
+        return mapToResponse(user);
     }
 
     @Override
@@ -63,14 +82,7 @@ public class AdminUserServiceImpl implements AdminUserService {
             u.setStatus(newStatus);
             userRepository.save(u);
 
-            return UserAdminResponse.builder()
-                    .id(u.getId())
-                    .email(u.getEmail())
-                    .fullName(u.getFullName())
-                    .role(u.getRole() != null ? u.getRole().name() : null)
-                    .status(u.getStatus() != null ? u.getStatus().name() : null)
-                    .createdAt(u.getCreatedAt())
-                    .build();
+            return mapToResponse(u);
         } catch (IllegalArgumentException ex) {
             throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Invalid account status: " + request.getStatus());
         }
@@ -79,27 +91,12 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public Page<UserAdminResponse> listUsers(Pageable pageable) {
         return userRepository.findAll(pageable)
-                .map(u -> UserAdminResponse.builder()
-                        .id(u.getId())
-                        .email(u.getEmail())
-                        .fullName(u.getFullName())
-                        .role(u.getRole() != null ? u.getRole().name() : null)
-                        .status(u.getStatus() != null ? u.getStatus().name() : null)
-                        .createdAt(u.getCreatedAt())
-                        .build());
+                .map(this::mapToResponse);
     }
 
     @Override
     public UserAdminResponse getUser(Long id) {
         User u = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND));
-        return UserAdminResponse.builder()
-                .id(u.getId())
-                .email(u.getEmail())
-                .fullName(u.getFullName())
-                .role(u.getRole() != null ? u.getRole().name() : null)
-                .status(u.getStatus() != null ? u.getStatus().name() : null)
-                .createdAt(u.getCreatedAt())
-                .build();
+        return mapToResponse(u);
     }
 }
-

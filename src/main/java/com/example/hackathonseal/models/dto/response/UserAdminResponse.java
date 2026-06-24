@@ -16,5 +16,7 @@ public class UserAdminResponse {
     private String role;
     private String status;
     private LocalDateTime createdAt;
+    private String studentCode;
+    private String universityName;
 }
 
