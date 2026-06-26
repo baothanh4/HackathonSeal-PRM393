@@ -6,11 +6,11 @@ import com.example.hackathonseal.models.dto.request.EventCriteriaRequest;
 import com.example.hackathonseal.models.dto.request.UpdateEventCriteriaRequest;
 import com.example.hackathonseal.models.dto.response.EventCriteriaResponse;
 import com.example.hackathonseal.models.entity.CriteriaTemplate;
-import com.example.hackathonseal.models.entity.Event;
+import com.example.hackathonseal.models.entity.Round;
 import com.example.hackathonseal.models.entity.EventCriteria;
 import com.example.hackathonseal.repo.CriteriaTemplateRepository;
 import com.example.hackathonseal.repo.EventCriteriaRepository;
-import com.example.hackathonseal.repo.EventRepository;
+import com.example.hackathonseal.repo.RoundRepository;
 import com.example.hackathonseal.services.Interface.EventCriteriaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,14 @@ import java.util.List;
 public class EventCriteriaServiceImpl implements EventCriteriaService {
 
     private final EventCriteriaRepository eventCriteriaRepository;
-    private final EventRepository eventRepository;
+    private final RoundRepository roundRepository;
     private final CriteriaTemplateRepository criteriaTemplateRepository;
 
     @Override
     @Transactional
-    public EventCriteriaResponse addCriterionToEvent(Long eventId, EventCriteriaRequest request) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event not found"));
+    public EventCriteriaResponse addCriterionToRound(Long roundId, EventCriteriaRequest request) {
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round not found"));
 
         CriteriaTemplate template = null;
         String name = request.getCustomName();
@@ -62,7 +62,7 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
         }
 
         EventCriteria criterion = EventCriteria.builder()
-                .event(event)
+                .round(round)
                 .template(template)
                 .customName(name.trim())
                 .customWeight(weight)
@@ -76,14 +76,14 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventCriteriaResponse> getCriteriaForEvent(Long eventId, boolean activeOnly) {
-        if (!eventRepository.existsById(eventId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event not found");
+    public List<EventCriteriaResponse> getCriteriaForRound(Long roundId, boolean activeOnly) {
+        if (!roundRepository.existsById(roundId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round not found");
         }
 
         List<EventCriteria> criteria = activeOnly
-                ? eventCriteriaRepository.findByEventIdAndIsActiveTrue(eventId)
-                : eventCriteriaRepository.findByEventId(eventId);
+                ? eventCriteriaRepository.findByRoundIdAndIsActiveTrue(roundId)
+                : eventCriteriaRepository.findByRoundId(roundId);
 
         return criteria.stream()
                 .map(this::mapToResponse)
@@ -92,16 +92,16 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
 
     @Override
     @Transactional
-    public EventCriteriaResponse updateEventCriterion(Long eventId, Long criterionId, UpdateEventCriteriaRequest request) {
-        if (!eventRepository.existsById(eventId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event not found");
+    public EventCriteriaResponse updateEventCriterion(Long roundId, Long criterionId, UpdateEventCriteriaRequest request) {
+        if (!roundRepository.existsById(roundId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round not found");
         }
 
         EventCriteria criterion = eventCriteriaRepository.findById(criterionId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion not found"));
 
-        if (!criterion.getEvent().getId().equals(eventId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion does not belong to the specified event");
+        if (!criterion.getRound().getId().equals(roundId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion does not belong to the specified round");
         }
 
         if (request.getCustomName() != null && !request.getCustomName().trim().isEmpty()) {
@@ -129,16 +129,16 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
 
     @Override
     @Transactional
-    public void deleteEventCriterion(Long eventId, Long criterionId) {
-        if (!eventRepository.existsById(eventId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event not found");
+    public void deleteEventCriterion(Long roundId, Long criterionId) {
+        if (!roundRepository.existsById(roundId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round not found");
         }
 
         EventCriteria criterion = eventCriteriaRepository.findById(criterionId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion not found"));
 
-        if (!criterion.getEvent().getId().equals(eventId)) {
-            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion does not belong to the specified event");
+        if (!criterion.getRound().getId().equals(roundId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event criterion does not belong to the specified round");
         }
 
         eventCriteriaRepository.delete(criterion);
@@ -147,7 +147,8 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
     private EventCriteriaResponse mapToResponse(EventCriteria criterion) {
         return EventCriteriaResponse.builder()
                 .id(criterion.getId())
-                .eventId(criterion.getEvent().getId())
+                .roundId(criterion.getRound().getId())
+                .eventId(criterion.getRound().getEvent() != null ? criterion.getRound().getEvent().getId() : null)
                 .templateId(criterion.getTemplate() != null ? criterion.getTemplate().getId() : null)
                 .customName(criterion.getCustomName())
                 .customWeight(criterion.getCustomWeight())

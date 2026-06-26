@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface EventCriteriaRepository extends JpaRepository<EventCriteria, Long> {
-    List<EventCriteria> findByEventId(Long eventId);
-    List<EventCriteria> findByEventIdAndIsActiveTrue(Long eventId);
+    List<EventCriteria> findByRoundId(Long roundId);
+    List<EventCriteria> findByRoundIdAndIsActiveTrue(Long roundId);
 }

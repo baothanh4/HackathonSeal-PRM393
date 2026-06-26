@@ -32,6 +32,7 @@ public class SubmissionServiceImpl implements SubmissionService {
     private final RoundRepository roundRepository;
     private final SubmissionRepository submissionRepository;
     private final RankingService rankingService;
+    private final com.example.hackathonseal.repo.EventRegistrationRepository registrationRepository;
 
     @Override
     @Transactional
@@ -101,6 +102,35 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .status(submission.getStatus() != null ? submission.getStatus().name() : null)
                 .submittedAt(submission.getSubmittedAt())
                 .build();
+    }
+
+    @Override
+    public java.util.List<SubmissionResponse> getAllSubmissions() {
+        return submissionRepository.findAll()
+                .stream()
+                .map(sub -> {
+                    String trackName = "Chưa phân hạng";
+                    if (sub.getTeam().getCategory() != null) {
+                        trackName = sub.getTeam().getCategory().getName();
+                    }
+                    long size = registrationRepository.countByTeamAndActiveTrue(sub.getTeam());
+
+                    return SubmissionResponse.builder()
+                            .id(sub.getId())
+                            .teamId(sub.getTeam().getId())
+                            .roundId(sub.getRound().getId())
+                            .projectName(sub.getProjectName())
+                            .githubUrl(sub.getGithubUrl())
+                            .status(sub.getStatus() != null ? sub.getStatus().name() : null)
+                            .submittedAt(sub.getSubmittedAt())
+                            .teamName(sub.getTeam().getName())
+                            .trackName(trackName)
+                            .roundName(sub.getRound().getName())
+                            .eventName(sub.getTeam().getEvent().getTitle())
+                            .teamSize((int) size)
+                            .build();
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 }
 

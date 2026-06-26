@@ -23,6 +23,8 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
     Page<EventRegistration> findByUser(User user, Pageable pageable);
 
+    Page<EventRegistration> findByUserAndActiveTrue(User user, Pageable pageable);
+
     List<EventRegistration> findByTeamAndActiveTrue(com.example.hackathonseal.models.entity.Team team);
 
     long countByTeamAndActiveTrue(com.example.hackathonseal.models.entity.Team team);
