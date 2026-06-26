@@ -34,6 +34,8 @@ public class Round {
 
     private Boolean isActive;
 
+    private Integer advancementCount;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

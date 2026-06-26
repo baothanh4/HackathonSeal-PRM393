@@ -32,6 +32,7 @@ public class RoundServiceImpl implements RoundService {
                 .orderIndex(request.getOrderIndex())
                 .submissionDeadline(request.getSubmissionDeadline())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .advancementCount(request.getAdvancementCount())
                 .build();
 
         round = roundRepository.save(round);
@@ -44,6 +45,7 @@ public class RoundServiceImpl implements RoundService {
                 .orderIndex(round.getOrderIndex())
                 .submissionDeadline(round.getSubmissionDeadline())
                 .isActive(round.getIsActive())
+                .advancementCount(round.getAdvancementCount())
                 .build();
     }
 
@@ -59,6 +61,7 @@ public class RoundServiceImpl implements RoundService {
                         .orderIndex(r.getOrderIndex())
                         .submissionDeadline(r.getSubmissionDeadline())
                         .isActive(r.getIsActive())
+                        .advancementCount(r.getAdvancementCount())
                         .build())
                 .collect(Collectors.toList());
     }

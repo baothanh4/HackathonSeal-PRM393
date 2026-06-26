@@ -19,5 +19,7 @@ public class RoundRequest {
     private LocalDateTime submissionDeadline;
 
     private Boolean isActive;
+
+    private Integer advancementCount;
 }
 
