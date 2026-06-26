@@ -163,7 +163,7 @@ public class TestDataSeeder implements CommandLineRunner {
 
         // 6. Create Event Criteria
         EventCriteria criteria = EventCriteria.builder()
-                .event(event)
+                .round(round1)
                 .customName("Code Quality & Implementation")
                 .customWeight(1.0)
                 .maxScore(100.0)
