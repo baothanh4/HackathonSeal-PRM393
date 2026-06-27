@@ -9,4 +9,5 @@ public interface JudgeAssignmentService {
     JudgeAssignmentResponse assignJudge(Long eventId, JudgeAssignmentRequest request);
     List<JudgeAssignmentResponse> getAssignmentsForEvent(Long eventId);
     void deleteAssignment(Long eventId, Long assignmentId);
+    JudgeAssignmentResponse updateAssignment(Long eventId, Long assignmentId, JudgeAssignmentRequest request);
 }

@@ -10,4 +10,5 @@ import java.util.List;
 public interface JudgeAssignmentRepository extends JpaRepository<JudgeAssignment, Long> {
     List<JudgeAssignment> findByRoundEventId(Long eventId);
     List<JudgeAssignment> findByRoundIdAndJudgeId(Long roundId, Long judgeId);
+    void deleteByCategoryIdAndJudgeId(Long categoryId, Long judgeId);
 }

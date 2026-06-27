@@ -35,5 +35,28 @@ public class RoundController {
         List<RoundResponse> resp = roundService.getRoundsForEvent(eventId);
         return ResponseEntity.ok(resp);
     }
+
+    @PutMapping("/{roundId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update a round for an event (ADMIN)")
+    public ResponseEntity<RoundResponse> updateRound(
+            @PathVariable Long eventId,
+            @PathVariable Long roundId,
+            @Valid @RequestBody RoundRequest request
+    ) {
+        RoundResponse resp = roundService.updateRound(eventId, roundId, request);
+        return ResponseEntity.ok(resp);
+    }
+
+    @DeleteMapping("/{roundId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a round from an event (ADMIN)")
+    public ResponseEntity<Void> deleteRound(
+            @PathVariable Long eventId,
+            @PathVariable Long roundId
+    ) {
+        roundService.deleteRound(eventId, roundId);
+        return ResponseEntity.noContent().build();
+    }
 }
 

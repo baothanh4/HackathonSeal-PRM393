@@ -28,7 +28,7 @@ public class EventRegistration {
 
     // The user who registered this participant (must be a user with an account)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "registered_by_id", nullable = true)
+    @JoinColumn(name = "registered_by_id", nullable = false)
     private User registeredBy;
 
     @ManyToOne(fetch = FetchType.LAZY)

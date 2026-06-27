@@ -117,6 +117,77 @@ public class JudgeAssignmentServiceImpl implements JudgeAssignmentService {
         judgeAssignmentRepository.delete(assignment);
     }
 
+    @Override
+    @Transactional
+    public JudgeAssignmentResponse updateAssignment(Long eventId, Long assignmentId, JudgeAssignmentRequest request) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Event not found");
+        }
+
+        JudgeAssignment assignment = judgeAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Assignment not found"));
+
+        if (!assignment.getRound().getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Assignment does not belong to this event");
+        }
+
+        User judge = userRepository.findById(request.getJudgeId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Judge not found"));
+
+        if (judge.getRole() != UserRole.JUDGE) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "User is not a judge");
+        }
+
+        Round round = roundRepository.findById(request.getRoundId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round not found"));
+
+        if (!round.getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Round does not belong to this event");
+        }
+
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+            if (!category.getEvent().getId().equals(eventId)) {
+                throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+            }
+        }
+
+        JudgeType type;
+        try {
+            type = JudgeType.valueOf(request.getJudgeType().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Invalid judge type (must be INTERNAL or GUEST)");
+        }
+
+        // Check for existing assignment with different ID
+        List<JudgeAssignment> existing = judgeAssignmentRepository.findByRoundIdAndJudgeId(round.getId(), judge.getId());
+        final Category finalCategory = category;
+        boolean alreadyAssigned = existing.stream().anyMatch(a -> {
+            if (a.getId().equals(assignmentId)) {
+                return false;
+            }
+            if (finalCategory == null) {
+                return a.getCategory() == null;
+            } else {
+                return a.getCategory() != null && a.getCategory().getId().equals(finalCategory.getId());
+            }
+        });
+
+        if (alreadyAssigned) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Judge is already assigned to this round/category");
+        }
+
+        assignment.setJudge(judge);
+        assignment.setRound(round);
+        assignment.setCategory(category);
+        assignment.setJudgeType(type);
+
+        assignment = judgeAssignmentRepository.save(assignment);
+        return mapToResponse(assignment);
+    }
+
     private JudgeAssignmentResponse mapToResponse(JudgeAssignment assignment) {
         return JudgeAssignmentResponse.builder()
                 .id(assignment.getId())
