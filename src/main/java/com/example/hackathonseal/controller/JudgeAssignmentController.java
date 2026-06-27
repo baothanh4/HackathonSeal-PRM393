@@ -38,6 +38,17 @@ public class JudgeAssignmentController {
         return ResponseEntity.ok(judgeAssignmentService.getAssignmentsForEvent(eventId));
     }
 
+    @PutMapping("/{assignmentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @Operation(summary = "Update judge assignment (ADMIN / COORDINATOR)")
+    public ResponseEntity<JudgeAssignmentResponse> updateAssignment(
+            @PathVariable Long eventId,
+            @PathVariable Long assignmentId,
+            @Valid @RequestBody JudgeAssignmentRequest request
+    ) {
+        return ResponseEntity.ok(judgeAssignmentService.updateAssignment(eventId, assignmentId, request));
+    }
+
     @DeleteMapping("/{assignmentId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
     @Operation(summary = "Delete judge assignment (ADMIN / COORDINATOR)")

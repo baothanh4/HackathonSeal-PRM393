@@ -10,4 +10,6 @@ public interface CategoryService {
     List<CategoryResponse> getCategoriesByEvent(Long eventId);
     CategoryResponse assignMentorToCategory(Long eventId, Long categoryId, Long mentorId);
     CategoryResponse assignJudgeToCategory(Long eventId, Long categoryId, Long judgeId);
+    CategoryResponse unassignMentorFromCategory(Long eventId, Long categoryId, Long mentorId);
+    CategoryResponse unassignJudgeFromCategory(Long eventId, Long categoryId, Long judgeId);
 }

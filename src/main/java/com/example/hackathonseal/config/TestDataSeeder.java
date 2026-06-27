@@ -115,6 +115,7 @@ public class TestDataSeeder implements CommandLineRunner {
         EventRegistration regA = EventRegistration.builder()
                 .event(event)
                 .user(studentA)
+                .registeredBy(studentA)
                 .registeredAt(LocalDateTime.now())
                 .active(true)
                 .build();
@@ -122,6 +123,7 @@ public class TestDataSeeder implements CommandLineRunner {
         EventRegistration regB = EventRegistration.builder()
                 .event(event)
                 .user(studentB)
+                .registeredBy(studentB)
                 .registeredAt(LocalDateTime.now())
                 .active(true)
                 .build();

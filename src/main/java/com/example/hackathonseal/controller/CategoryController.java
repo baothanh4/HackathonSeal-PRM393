@@ -58,4 +58,26 @@ public class CategoryController {
     ) {
         return ResponseEntity.ok(categoryService.assignJudgeToCategory(eventId, categoryId, judgeId));
     }
+
+    @DeleteMapping("/{categoryId}/mentors/{mentorId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @Operation(summary = "Unassign a mentor from a category. Only ADMIN or COORDINATOR")
+    public ResponseEntity<CategoryResponse> unassignMentor(
+            @PathVariable Long eventId,
+            @PathVariable Long categoryId,
+            @PathVariable Long mentorId
+    ) {
+        return ResponseEntity.ok(categoryService.unassignMentorFromCategory(eventId, categoryId, mentorId));
+    }
+
+    @DeleteMapping("/{categoryId}/judges/{judgeId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @Operation(summary = "Unassign a judge from a category. Only ADMIN or COORDINATOR")
+    public ResponseEntity<CategoryResponse> unassignJudge(
+            @PathVariable Long eventId,
+            @PathVariable Long categoryId,
+            @PathVariable Long judgeId
+    ) {
+        return ResponseEntity.ok(categoryService.unassignJudgeFromCategory(eventId, categoryId, judgeId));
+    }
 }

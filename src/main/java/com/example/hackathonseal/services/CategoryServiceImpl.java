@@ -11,6 +11,7 @@ import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.repo.CategoryRepository;
 import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.UserRepository;
+import com.example.hackathonseal.repo.JudgeAssignmentRepository;
 import com.example.hackathonseal.services.Interface.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final JudgeAssignmentRepository judgeAssignmentRepository;
 
     @Override
     @Transactional
@@ -103,6 +105,57 @@ public class CategoryServiceImpl implements CategoryService {
         if (!category.getJudges().contains(judge)) {
             category.getJudges().add(judge);
             category = categoryRepository.save(category);
+        }
+
+        return mapToCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse unassignMentorFromCategory(Long eventId, Long categoryId, Long mentorId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+
+        if (!category.getEvent().getId().equals(event.getId())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+        }
+
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Mentor user not found"));
+
+        if (category.getMentors().contains(mentor)) {
+            category.getMentors().remove(mentor);
+            category = categoryRepository.save(category);
+        }
+
+        return mapToCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse unassignJudgeFromCategory(Long eventId, Long categoryId, Long judgeId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+
+        if (!category.getEvent().getId().equals(event.getId())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+        }
+
+        User judge = userRepository.findById(judgeId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Judge user not found"));
+
+        if (category.getJudges().contains(judge)) {
+            category.getJudges().remove(judge);
+            category = categoryRepository.save(category);
+
+            // Delete any round-level judge assignments in this category
+            judgeAssignmentRepository.deleteByCategoryIdAndJudgeId(categoryId, judgeId);
         }
 
         return mapToCategoryResponse(category);

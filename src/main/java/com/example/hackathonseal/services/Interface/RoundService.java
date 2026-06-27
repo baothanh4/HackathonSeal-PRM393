@@ -8,5 +8,7 @@ import java.util.List;
 public interface RoundService {
     RoundResponse createRound(Long eventId, RoundRequest request);
     List<RoundResponse> getRoundsForEvent(Long eventId);
+    RoundResponse updateRound(Long eventId, Long roundId, RoundRequest request);
+    void deleteRound(Long eventId, Long roundId);
 }
 
