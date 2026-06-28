@@ -11,4 +11,5 @@ public interface JudgeAssignmentRepository extends JpaRepository<JudgeAssignment
     List<JudgeAssignment> findByRoundEventId(Long eventId);
     List<JudgeAssignment> findByRoundIdAndJudgeId(Long roundId, Long judgeId);
     void deleteByCategoryIdAndJudgeId(Long categoryId, Long judgeId);
+    void deleteByCategoryId(Long categoryId);
 }

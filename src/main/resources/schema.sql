@@ -194,6 +194,7 @@ CREATE TABLE rounds (
                         submission_deadline TIMESTAMP,
 
                         is_active BOOLEAN DEFAULT FALSE,
+                        advancement_count INTEGER,
 
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -343,7 +344,11 @@ CREATE TABLE email_verification_tokens (
 
                                            user_id BIGINT NOT NULL,
 
-                                           expiry_date TIMESTAMP NOT NULL,
+                                           expires_at TIMESTAMP NOT NULL,
+
+                                           used BOOLEAN NOT NULL DEFAULT FALSE,
+
+                                           created_at TIMESTAMP NOT NULL,
 
                                            FOREIGN KEY (user_id)
                                                REFERENCES users(id)
@@ -361,7 +366,11 @@ CREATE TABLE password_reset_tokens (
 
                                        user_id BIGINT NOT NULL,
 
-                                       expiry_date TIMESTAMP NOT NULL,
+                                       expires_at TIMESTAMP NOT NULL,
+
+                                       used BOOLEAN NOT NULL DEFAULT FALSE,
+
+                                       created_at TIMESTAMP NOT NULL,
 
                                        FOREIGN KEY (user_id)
                                            REFERENCES users(id)

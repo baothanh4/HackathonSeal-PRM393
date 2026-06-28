@@ -42,7 +42,8 @@ public enum ErrorCode {
     // Password Reset Errors
     INVALID_RESET_TOKEN("400", "Invalid or expired password reset token"),
     RESET_TOKEN_ALREADY_USED("400", "This reset link has already been used"),
-    USER_NOT_FOUND("404", "User not found with given email");
+    USER_NOT_FOUND("404", "User not found with given email"),
+    CATEGORY_IN_USE("400", "Category is in use and cannot be deleted");
 
 
     private final String code;

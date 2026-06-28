@@ -80,4 +80,26 @@ public class CategoryController {
     ) {
         return ResponseEntity.ok(categoryService.unassignJudgeFromCategory(eventId, categoryId, judgeId));
     }
+
+    @PutMapping("/{categoryId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @Operation(summary = "Update a category. Only ADMIN or COORDINATOR")
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable Long eventId,
+            @PathVariable Long categoryId,
+            @Valid @RequestBody CategoryRequest request
+    ) {
+        return ResponseEntity.ok(categoryService.updateCategory(eventId, categoryId, request));
+    }
+
+    @DeleteMapping("/{categoryId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    @Operation(summary = "Delete a category. Only ADMIN or COORDINATOR")
+    public ResponseEntity<Void> deleteCategory(
+            @PathVariable Long eventId,
+            @PathVariable Long categoryId
+    ) {
+        categoryService.deleteCategory(eventId, categoryId);
+        return ResponseEntity.noContent().build();
+    }
 }
