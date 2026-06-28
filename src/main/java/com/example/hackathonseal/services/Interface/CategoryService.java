@@ -12,4 +12,6 @@ public interface CategoryService {
     CategoryResponse assignJudgeToCategory(Long eventId, Long categoryId, Long judgeId);
     CategoryResponse unassignMentorFromCategory(Long eventId, Long categoryId, Long mentorId);
     CategoryResponse unassignJudgeFromCategory(Long eventId, Long categoryId, Long judgeId);
+    CategoryResponse updateCategory(Long eventId, Long categoryId, CategoryRequest request);
+    void deleteCategory(Long eventId, Long categoryId);
 }

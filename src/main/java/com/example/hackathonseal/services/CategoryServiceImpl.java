@@ -11,6 +11,7 @@ import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.repo.CategoryRepository;
 import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.UserRepository;
+import com.example.hackathonseal.repo.TeamRepository;
 import com.example.hackathonseal.repo.JudgeAssignmentRepository;
 import com.example.hackathonseal.services.Interface.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final JudgeAssignmentRepository judgeAssignmentRepository;
+    private final TeamRepository teamRepository;
 
     @Override
     @Transactional
@@ -159,6 +161,49 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         return mapToCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse updateCategory(Long eventId, Long categoryId, CategoryRequest request) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+
+        if (!category.getEvent().getId().equals(event.getId())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+        }
+
+        category.setName(request.getName().trim());
+        category.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
+
+        category = categoryRepository.save(category);
+        return mapToCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(Long eventId, Long categoryId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category not found"));
+
+        if (!category.getEvent().getId().equals(event.getId())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category does not belong to this event");
+        }
+
+        if (teamRepository.existsByCategoryId(categoryId)) {
+            throw new AppException(ErrorCode.CATEGORY_IN_USE);
+        }
+
+        // Clean up judge assignments associated with this category
+        judgeAssignmentRepository.deleteByCategoryId(categoryId);
+
+        categoryRepository.delete(category);
     }
 
     private CategoryResponse mapToCategoryResponse(Category category) {

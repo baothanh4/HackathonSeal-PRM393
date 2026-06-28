@@ -3,6 +3,7 @@ package com.example.hackathonseal.services;
 import com.example.hackathonseal.exception.AppException;
 import com.example.hackathonseal.models.Enum.ErrorCode;
 import com.example.hackathonseal.models.Enum.UserRole;
+import com.example.hackathonseal.models.dto.request.CategoryRequest;
 import com.example.hackathonseal.models.dto.response.CategoryResponse;
 import com.example.hackathonseal.models.entity.Category;
 import com.example.hackathonseal.models.entity.Event;
@@ -11,6 +12,7 @@ import com.example.hackathonseal.repo.CategoryRepository;
 import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.JudgeAssignmentRepository;
 import com.example.hackathonseal.repo.UserRepository;
+import com.example.hackathonseal.repo.TeamRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,9 @@ class CategoryServiceImplTest {
 
     @Mock
     private JudgeAssignmentRepository judgeAssignmentRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -126,5 +131,49 @@ class CategoryServiceImplTest {
 
         assertEquals(ErrorCode.RESOURCE_NOT_FOUND.getCode(), exception.getErrorCode());
         assertEquals("Category does not belong to this event", exception.getMessage());
+    }
+
+    @Test
+    void updateCategory_Success() {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Updated Category Name");
+        request.setDescription("Updated Description");
+
+        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
+        when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CategoryResponse response = categoryService.updateCategory(1L, 5L, request);
+
+        assertNotNull(response);
+        assertEquals("Updated Category Name", response.getName());
+        assertEquals("Updated Description", response.getDescription());
+    }
+
+    @Test
+    void deleteCategory_Success() {
+        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
+        when(teamRepository.existsByCategoryId(5L)).thenReturn(false);
+        doNothing().when(judgeAssignmentRepository).deleteByCategoryId(5L);
+        doNothing().when(categoryRepository).delete(any(Category.class));
+
+        assertDoesNotThrow(() -> categoryService.deleteCategory(1L, 5L));
+
+        verify(judgeAssignmentRepository, times(1)).deleteByCategoryId(5L);
+        verify(categoryRepository, times(1)).delete(category);
+    }
+
+    @Test
+    void deleteCategory_InUseByTeams_ThrowsException() {
+        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
+        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
+        when(teamRepository.existsByCategoryId(5L)).thenReturn(true);
+
+        AppException exception = assertThrows(AppException.class, () ->
+                categoryService.deleteCategory(1L, 5L)
+        );
+
+        assertEquals(ErrorCode.CATEGORY_IN_USE.getCode(), exception.getErrorCode());
     }
 }
