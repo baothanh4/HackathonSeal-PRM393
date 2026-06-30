@@ -13,6 +13,7 @@ public class SubmissionResponse {
     private Long id;
     private Long teamId;
     private Long roundId;
+    private Long eventId;
     private String projectName;
     private String githubUrl;
     private String status;

@@ -155,6 +155,7 @@ public class EventCriteriaServiceImpl implements EventCriteriaService {
                 .maxScore(criterion.getMaxScore())
                 .isActive(criterion.getIsActive())
                 .createdAt(criterion.getCreatedAt())
+                .description(criterion.getTemplate() != null ? criterion.getTemplate().getDescription() : "")
                 .build();
     }
 }

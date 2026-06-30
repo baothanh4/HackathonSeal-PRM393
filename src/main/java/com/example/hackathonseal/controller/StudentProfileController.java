@@ -22,7 +22,7 @@ public class StudentProfileController {
     private final StudentProfileService studentProfileService;
 
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STUDENT_LEADER')")
     @Operation(summary = "Get current logged-in student's profile details")
     public ResponseEntity<StudentProfileResponse> getProfile(@AuthenticationPrincipal User currentUser) {
         StudentProfileResponse response = studentProfileService.getStudentProfile(currentUser);
@@ -30,7 +30,7 @@ public class StudentProfileController {
     }
 
     @PutMapping("/profile")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STUDENT_LEADER')")
     @Operation(summary = "Update current logged-in student's profile details")
     public ResponseEntity<StudentProfileResponse> updateProfile(
             @AuthenticationPrincipal User currentUser,

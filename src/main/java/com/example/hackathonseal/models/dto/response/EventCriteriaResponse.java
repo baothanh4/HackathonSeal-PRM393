@@ -19,4 +19,5 @@ public class EventCriteriaResponse {
     private Double maxScore;
     private Boolean isActive;
     private LocalDateTime createdAt;
+    private String description;
 }

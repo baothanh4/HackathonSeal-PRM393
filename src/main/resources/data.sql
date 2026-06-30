@@ -32,9 +32,9 @@ INSERT INTO users (id, email, password, full_name, role, status, is_email_verifi
 (3, 'judge1@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Dr. Alan Turing', 'JUDGE', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '8 days'),
 (4, 'judge2@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Prof. Grace Hopper', 'JUDGE', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '8 days'),
 (5, 'mentor1@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Steve Jobs', 'MENTOR', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '7 days'),
-(6, 'leader_a@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Alice Vance', 'STUDENT', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '6 days'),
+(6, 'leader_a@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Alice Vance', 'STUDENT_LEADER', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '6 days'),
 (7, 'member_a@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Bob Smith', 'STUDENT', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '6 days'),
-(8, 'leader_b@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Charlie Brown', 'STUDENT', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '5 days'),
+(8, 'leader_b@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Charlie Brown', 'STUDENT_LEADER', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '5 days'),
 (9, 'member_b@gmail.com', '$2b$10$gAFtJbfOPPFi7noPuxGm7.V8Q22aO9HjDCnpqHRtIBqjmCwtPE9ou', 'Diana Prince', 'STUDENT', 'APPROVED', true, CURRENT_TIMESTAMP - INTERVAL '5 days');
 
 -- 2. USER PROFILES

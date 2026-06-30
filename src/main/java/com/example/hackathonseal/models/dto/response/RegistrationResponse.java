@@ -27,6 +27,7 @@ public class RegistrationResponse {
     // team info if applicable
     private Long teamId;
     private String teamName;
+    private String teamRole;
 
     private String message;
 }

@@ -24,7 +24,7 @@ public class StudentProfileServiceImpl implements StudentProfileService {
 
     @Override
     public StudentProfileResponse getStudentProfile(User currentUser) {
-        if (currentUser.getRole() != UserRole.STUDENT) {
+        if (currentUser.getRole() != UserRole.STUDENT && currentUser.getRole() != UserRole.STUDENT_LEADER) {
             throw new AppException(ErrorCode.ACCESS_DENIED, "Only students can view/edit student profiles");
         }
 
@@ -37,7 +37,7 @@ public class StudentProfileServiceImpl implements StudentProfileService {
     @Override
     @Transactional
     public StudentProfileResponse updateStudentProfile(User currentUser, UpdateStudentProfileRequest request) {
-        if (currentUser.getRole() != UserRole.STUDENT) {
+        if (currentUser.getRole() != UserRole.STUDENT && currentUser.getRole() != UserRole.STUDENT_LEADER) {
             throw new AppException(ErrorCode.ACCESS_DENIED, "Only students can view/edit student profiles");
         }
 
