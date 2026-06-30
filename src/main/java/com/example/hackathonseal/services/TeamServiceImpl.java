@@ -16,6 +16,8 @@ import com.example.hackathonseal.repo.EventRegistrationRepository;
 import com.example.hackathonseal.repo.EventRepository;
 import com.example.hackathonseal.repo.TeamRepository;
 import com.example.hackathonseal.repo.UserProfileRepository;
+import com.example.hackathonseal.models.Enum.UserRole;
+import com.example.hackathonseal.repo.UserRepository;
 import com.example.hackathonseal.services.Interface.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class TeamServiceImpl implements TeamService {
     private final EventRegistrationRepository registrationRepository;
     private final UserProfileRepository userProfileRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -83,6 +86,12 @@ public class TeamServiceImpl implements TeamService {
 
         leaderReg.setTeam(team);
         registrationRepository.save(leaderReg);
+
+        // Update user's role to STUDENT_LEADER if they are a STUDENT
+        if (currentUser.getRole() == UserRole.STUDENT) {
+            currentUser.setRole(UserRole.STUDENT_LEADER);
+            userRepository.save(currentUser);
+        }
 
         log.info("Team created successfully. Team ID: {}, Name: {}", team.getId(), team.getName());
         return mapToTeamResponse(team);
@@ -168,6 +177,54 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    @Transactional
+    public TeamResponse removeMember(Long eventId, Long teamId, Long registrationId, String email, User currentUser) {
+        log.info("Removing member from team. Event ID: {}, Team ID: {}, Target Registration ID: {}, Email: {}, Requester: {}",
+                eventId, teamId, registrationId, email, currentUser.getEmail());
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Team not found"));
+
+        if (!team.getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Team does not belong to this event");
+        }
+
+        // Only the team leader (or admin/coordinator) can remove members.
+        if (!team.getLeader().getId().equals(currentUser.getId()) && currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.COORDINATOR) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Only the team leader can remove members.");
+        }
+
+        EventRegistration targetReg;
+        if (registrationId != null) {
+            targetReg = registrationRepository.findById(registrationId)
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Registration participant not found"));
+        } else if (email != null && !email.isBlank()) {
+            targetReg = registrationRepository.findByEventAndEmailAndActiveTrue(event, email.trim().toLowerCase())
+                    .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Participant registration not found for the provided email: " + email));
+        } else {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Either registrationId or email must be provided");
+        }
+
+        if (!team.getId().equals(targetReg.getTeam() != null ? targetReg.getTeam().getId() : null)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Participant is not in this team");
+        }
+
+        // A leader cannot remove themselves this way
+        if (targetReg.getUser().getId().equals(team.getLeader().getId())) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Team leader cannot be removed from the team");
+        }
+
+        targetReg.setTeam(null);
+        registrationRepository.save(targetReg);
+
+        log.info("Participant removed from team successfully. Team: {}, Participant Registration ID: {}", team.getName(), targetReg.getId());
+        return mapToTeamResponse(team);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<TeamResponse> getTeamsInEvent(Long eventId) {
         log.info("Retrieving all teams in event ID: {}", eventId);
@@ -212,6 +269,7 @@ public class TeamServiceImpl implements TeamService {
                 university = "FPT University";
             }
 
+            boolean isLeader = reg.getUser().getId().equals(team.getLeader().getId());
             return TeamMemberResponse.builder()
                     .registrationId(reg.getId())
                     .userId(reg.getUser().getId())
@@ -220,6 +278,7 @@ public class TeamServiceImpl implements TeamService {
                     .studentCode(studentCode)
                     .university(university)
                     .guest(false)
+                    .role(isLeader ? "LEADER" : "MEMBER")
                     .build();
         }).toList();
 

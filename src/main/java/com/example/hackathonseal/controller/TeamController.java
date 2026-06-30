@@ -58,6 +58,19 @@ public class TeamController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{teamId}/remove-member")
+    @Operation(summary = "Remove a participant from the team (Leader or Admin/Coordinator only)")
+    public ResponseEntity<TeamResponse> removeMember(
+            @PathVariable Long eventId,
+            @PathVariable Long teamId,
+            @RequestParam(required = false) Long registrationId,
+            @RequestParam(required = false) String email,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        TeamResponse response = teamService.removeMember(eventId, teamId, registrationId, email, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     @Operation(summary = "Get list of all teams in a competition/event")
     public ResponseEntity<List<TeamResponse>> getTeamsInEvent(

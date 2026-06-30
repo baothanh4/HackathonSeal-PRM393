@@ -197,6 +197,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         if (reg.getTeam() != null) {
             builder.teamId(reg.getTeam().getId())
                     .teamName(reg.getTeam().getName());
+            if (reg.getUser().getId().equals(reg.getTeam().getLeader().getId())) {
+                builder.teamRole("LEADER");
+            } else {
+                builder.teamRole("MEMBER");
+            }
         }
 
         return builder.build();

@@ -19,4 +19,5 @@ public class TeamMemberResponse {
     private String studentCode;
     private String university;
     private boolean guest;
+    private String role;
 }
