@@ -172,5 +172,12 @@ public class EventServiceImpl implements EventService {
                 .updatedAt(event.getUpdatedAt())
                 .rules(ruleResponses)
                 .build();
+     }
+
+    @Override
+    public java.util.List<EventResponse> getEventsAssignedToJudge(Long judgeId) {
+        return eventRepository.findEventsAssignedToJudge(judgeId).stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 }

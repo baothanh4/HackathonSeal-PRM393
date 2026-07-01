@@ -101,4 +101,13 @@ public class EventController {
         Page<EventResponse> events = eventService.searchEvents(title, status, pageable);
         return ResponseEntity.ok(events);
     }
+
+    @GetMapping("/assigned")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get all events assigned to the current judge/coordinator")
+    public ResponseEntity<java.util.List<EventResponse>> getAssignedEvents(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.example.hackathonseal.models.entity.User currentUser
+    ) {
+        return ResponseEntity.ok(eventService.getEventsAssignedToJudge(currentUser.getId()));
+    }
 }

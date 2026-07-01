@@ -133,11 +133,21 @@ public class EvaluationServiceImpl implements EvaluationService {
             throw new AppException(ErrorCode.ACCESS_DENIED, "This team is not registered in any category yet");
         }
 
+        System.out.println("DEBUG EVALUATION CHECK:");
+        System.out.println("- Round ID: " + round.getId());
+        System.out.println("- User ID: " + user.getId() + " (" + user.getEmail() + ")");
+        System.out.println("- Team Category ID: " + category.getId());
+
         List<JudgeAssignment> assignments = judgeAssignmentRepository.findByRoundIdAndJudgeId(round.getId(), user.getId());
+        System.out.println("- Found assignments count: " + assignments.size());
+        for (JudgeAssignment a : assignments) {
+            System.out.println("  -> Assignment ID: " + a.getId() + ", track_id: " + (a.getCategory() != null ? a.getCategory().getId() : "null"));
+        }
 
         boolean isAssigned = assignments.stream().anyMatch(a ->
                 a.getCategory() == null || a.getCategory().getId().equals(category.getId())
         );
+        System.out.println("- isAssigned result: " + isAssigned);
 
         if (!isAssigned) {
             throw new AppException(ErrorCode.ACCESS_DENIED, "You are not assigned to grade submissions in this Round / Category");

@@ -32,8 +32,8 @@ public class JudgeAssignmentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
-    @Operation(summary = "Get all judge assignments for an event (ADMIN / COORDINATOR)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR', 'JUDGE')")
+    @Operation(summary = "Get all judge assignments for an event (ADMIN / COORDINATOR / JUDGE)")
     public ResponseEntity<List<JudgeAssignmentResponse>> getAssignmentsForEvent(@PathVariable Long eventId) {
         return ResponseEntity.ok(judgeAssignmentService.getAssignmentsForEvent(eventId));
     }
