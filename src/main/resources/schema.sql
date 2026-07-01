@@ -178,6 +178,26 @@ CREATE TABLE event_registrations (
 );
 
 -- =========================================================================
+-- TEAM JOIN REQUESTS
+-- =========================================================================
+
+CREATE TABLE team_join_requests (
+                                    id BIGSERIAL PRIMARY KEY,
+                                    team_id BIGINT NOT NULL,
+                                    registration_id BIGINT NOT NULL,
+                                    status VARCHAR(50) NOT NULL,
+                                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                                    FOREIGN KEY (team_id)
+                                        REFERENCES teams(id)
+                                        ON DELETE CASCADE,
+
+                                    FOREIGN KEY (registration_id)
+                                        REFERENCES event_registrations(id)
+                                        ON DELETE CASCADE
+);
+
+-- =========================================================================
 -- ROUNDS
 -- =========================================================================
 
