@@ -26,6 +26,7 @@ public class EmailService {
      */
     @Async
     public void sendVerificationEmail(String toEmail, String fullName, String otp) {
+        System.out.println("=== [DEV TOOL] VERIFICATION OTP FOR " + toEmail + " IS: " + otp + " ===");
         String subject = "[HackathonSeal] Mã xác thực email của bạn: " + otp;
         String body = buildVerificationEmailBody(fullName, otp);
         sendHtmlEmail(toEmail, subject, body);
@@ -36,6 +37,7 @@ public class EmailService {
      */
     @Async
     public void sendPasswordResetEmail(String toEmail, String fullName, String otp) {
+        System.out.println("=== [DEV TOOL] PASSWORD RESET OTP FOR " + toEmail + " IS: " + otp + " ===");
         String subject = "[HackathonSeal] Mã đặt lại mật khẩu: " + otp;
         String body = buildPasswordResetEmailBody(fullName, otp);
         sendHtmlEmail(toEmail, subject, body);

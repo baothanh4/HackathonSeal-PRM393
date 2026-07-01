@@ -22,8 +22,8 @@ public class SubmissionListController {
     private final SubmissionService submissionService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('COORDINATOR')")
-    @Operation(summary = "List all project submissions (ADMIN/COORDINATOR)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('COORDINATOR') or hasRole('JUDGE')")
+    @Operation(summary = "List all project submissions (ADMIN/COORDINATOR/JUDGE)")
     public ResponseEntity<List<SubmissionResponse>> getAllSubmissions() {
         List<SubmissionResponse> submissions = submissionService.getAllSubmissions();
         return ResponseEntity.ok(submissions);

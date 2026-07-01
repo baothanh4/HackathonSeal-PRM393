@@ -18,4 +18,6 @@ public interface EventService {
     void deleteEvent(Long id);
 
     Page<EventResponse> searchEvents(String title, String status, Pageable pageable);
+
+    java.util.List<EventResponse> getEventsAssignedToJudge(Long judgeId);
 }
