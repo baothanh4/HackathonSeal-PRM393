@@ -2,6 +2,7 @@ package com.example.hackathonseal.controller;
 
 import com.example.hackathonseal.models.dto.request.TeamRequest;
 import com.example.hackathonseal.models.dto.response.TeamResponse;
+import com.example.hackathonseal.models.dto.response.TeamJoinRequestResponse;
 import com.example.hackathonseal.models.entity.User;
 import com.example.hackathonseal.services.Interface.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,12 +37,47 @@ public class TeamController {
 
     @PostMapping("/{teamId}/join")
     @Operation(summary = "Join an existing team in a competition/event")
-    public ResponseEntity<TeamResponse> joinTeam(
+    public ResponseEntity<TeamJoinRequestResponse> joinTeam(
             @PathVariable Long eventId,
             @PathVariable Long teamId,
             @AuthenticationPrincipal User currentUser
     ) {
-        TeamResponse response = teamService.joinTeam(eventId, teamId, currentUser);
+        TeamJoinRequestResponse response = teamService.joinTeam(eventId, teamId, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{teamId}/join-requests")
+    @Operation(summary = "Get list of all pending join requests for the team (Leader only)")
+    public ResponseEntity<List<TeamJoinRequestResponse>> getPendingJoinRequests(
+            @PathVariable Long eventId,
+            @PathVariable Long teamId,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        List<TeamJoinRequestResponse> response = teamService.getPendingJoinRequests(eventId, teamId, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{teamId}/join-requests/{requestId}/approve")
+    @Operation(summary = "Approve a team join request (Leader only)")
+    public ResponseEntity<TeamJoinRequestResponse> approveJoinRequest(
+            @PathVariable Long eventId,
+            @PathVariable Long teamId,
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        TeamJoinRequestResponse response = teamService.approveJoinRequest(eventId, teamId, requestId, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{teamId}/join-requests/{requestId}/reject")
+    @Operation(summary = "Reject a team join request (Leader only)")
+    public ResponseEntity<TeamJoinRequestResponse> rejectJoinRequest(
+            @PathVariable Long eventId,
+            @PathVariable Long teamId,
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        TeamJoinRequestResponse response = teamService.rejectJoinRequest(eventId, teamId, requestId, currentUser);
         return ResponseEntity.ok(response);
     }
 

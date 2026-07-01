@@ -19,6 +19,9 @@ import com.example.hackathonseal.repo.UserProfileRepository;
 import com.example.hackathonseal.models.Enum.UserRole;
 import com.example.hackathonseal.repo.UserRepository;
 import com.example.hackathonseal.services.Interface.TeamService;
+import com.example.hackathonseal.models.dto.response.TeamJoinRequestResponse;
+import com.example.hackathonseal.models.entity.TeamJoinRequest;
+import com.example.hackathonseal.repo.TeamJoinRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,7 @@ public class TeamServiceImpl implements TeamService {
     private final UserProfileRepository userProfileRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final TeamJoinRequestRepository teamJoinRequestRepository;
 
     @Override
     @Transactional
@@ -87,20 +91,14 @@ public class TeamServiceImpl implements TeamService {
         leaderReg.setTeam(team);
         registrationRepository.save(leaderReg);
 
-        // Update user's role to STUDENT_LEADER if they are a STUDENT
-        if (currentUser.getRole() == UserRole.STUDENT) {
-            currentUser.setRole(UserRole.STUDENT_LEADER);
-            userRepository.save(currentUser);
-        }
-
         log.info("Team created successfully. Team ID: {}, Name: {}", team.getId(), team.getName());
         return mapToTeamResponse(team);
     }
 
     @Override
     @Transactional
-    public TeamResponse joinTeam(Long eventId, Long teamId, User currentUser) {
-        log.info("User joining team. Event ID: {}, Team ID: {}, User: {}", eventId, teamId, currentUser.getEmail());
+    public TeamJoinRequestResponse joinTeam(Long eventId, Long teamId, User currentUser) {
+        log.info("User requesting to join team. Event ID: {}, Team ID: {}, User: {}", eventId, teamId, currentUser.getEmail());
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
@@ -119,11 +117,154 @@ public class TeamServiceImpl implements TeamService {
             throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "You are already a member of a team in this event");
         }
 
-        userReg.setTeam(team);
-        registrationRepository.save(userReg);
+        boolean alreadyPending = teamJoinRequestRepository.existsByTeamAndRegistrationAndStatus(team, userReg, "PENDING");
+        if (alreadyPending) {
+            throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "You have already requested to join this team");
+        }
 
-        log.info("User joined team successfully. Team: {}, User: {}", team.getName(), currentUser.getEmail());
-        return mapToTeamResponse(team);
+        TeamJoinRequest request = TeamJoinRequest.builder()
+                .team(team)
+                .registration(userReg)
+                .status("PENDING")
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+
+        request = teamJoinRequestRepository.save(request);
+
+        log.info("Join request created successfully. Request ID: {}, Team: {}, User: {}", request.getId(), team.getName(), currentUser.getEmail());
+        return mapToTeamJoinRequestResponse(request);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TeamJoinRequestResponse> getPendingJoinRequests(Long eventId, Long teamId, User currentUser) {
+        log.info("Retrieving pending join requests for Team ID: {}, requested by: {}", teamId, currentUser.getEmail());
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Team not found"));
+
+        if (!team.getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Team does not belong to this event");
+        }
+
+        if (!team.getLeader().getId().equals(currentUser.getId()) && currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.COORDINATOR) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Only the team leader can view pending join requests.");
+        }
+
+        List<TeamJoinRequest> requests = teamJoinRequestRepository.findByTeamAndStatus(team, "PENDING");
+        return requests.stream().map(this::mapToTeamJoinRequestResponse).toList();
+    }
+
+    @Override
+    @Transactional
+    public TeamJoinRequestResponse approveJoinRequest(Long eventId, Long teamId, Long requestId, User currentUser) {
+        log.info("Approving join request ID: {}, Team ID: {}, requested by: {}", requestId, teamId, currentUser.getEmail());
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Team not found"));
+
+        if (!team.getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Team does not belong to this event");
+        }
+
+        if (!team.getLeader().getId().equals(currentUser.getId()) && currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.COORDINATOR) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Only the team leader can approve join requests.");
+        }
+
+        TeamJoinRequest joinRequest = teamJoinRequestRepository.findById(requestId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Join request not found"));
+
+        if (!joinRequest.getTeam().getId().equals(teamId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Join request does not belong to this team");
+        }
+
+        if (!"PENDING".equals(joinRequest.getStatus())) {
+            throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "Join request is not pending (current status: " + joinRequest.getStatus() + ")");
+        }
+
+        EventRegistration applicantReg = joinRequest.getRegistration();
+        if (applicantReg.getTeam() != null) {
+            joinRequest.setStatus("REJECTED");
+            teamJoinRequestRepository.save(joinRequest);
+            throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "Applicant is already in a team");
+        }
+
+        applicantReg.setTeam(team);
+        registrationRepository.save(applicantReg);
+
+        joinRequest.setStatus("APPROVED");
+        joinRequest = teamJoinRequestRepository.save(joinRequest);
+
+        List<TeamJoinRequest> otherRequests = teamJoinRequestRepository.findByRegistrationAndStatus(applicantReg, "PENDING");
+        for (TeamJoinRequest req : otherRequests) {
+            req.setStatus("REJECTED");
+        }
+        teamJoinRequestRepository.saveAll(otherRequests);
+
+        log.info("Join request approved successfully. Request ID: {}, Member Added: {}", requestId, applicantReg.getUser().getEmail());
+        return mapToTeamJoinRequestResponse(joinRequest);
+    }
+
+    @Override
+    @Transactional
+    public TeamJoinRequestResponse rejectJoinRequest(Long eventId, Long teamId, Long requestId, User currentUser) {
+        log.info("Rejecting join request ID: {}, Team ID: {}, requested by: {}", requestId, teamId, currentUser.getEmail());
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Team not found"));
+
+        if (!team.getEvent().getId().equals(eventId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Team does not belong to this event");
+        }
+
+        if (!team.getLeader().getId().equals(currentUser.getId()) && currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.COORDINATOR) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Only the team leader can reject join requests.");
+        }
+
+        TeamJoinRequest joinRequest = teamJoinRequestRepository.findById(requestId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Join request not found"));
+
+        if (!joinRequest.getTeam().getId().equals(teamId)) {
+            throw new AppException(ErrorCode.INVALID_EMAIL_FORMAT, "Join request does not belong to this team");
+        }
+
+        if (!"PENDING".equals(joinRequest.getStatus())) {
+            throw new AppException(ErrorCode.EVENT_ALREADY_CANCELLED, "Join request is not pending");
+        }
+
+        joinRequest.setStatus("REJECTED");
+        joinRequest = teamJoinRequestRepository.save(joinRequest);
+
+        log.info("Join request rejected successfully. Request ID: {}", requestId);
+        return mapToTeamJoinRequestResponse(joinRequest);
+    }
+
+    private TeamJoinRequestResponse mapToTeamJoinRequestResponse(TeamJoinRequest request) {
+        String studentCode = null;
+        String university = "FPT University";
+
+        Optional<UserProfile> profileOpt = userProfileRepository.findByUserId(request.getRegistration().getUser().getId());
+        if (profileOpt.isPresent()) {
+            studentCode = profileOpt.get().getStudentCode();
+            university = profileOpt.get().getUniversityName();
+        }
+        if (university == null || university.isBlank()) {
+            university = "FPT University";
+        }
+
+        return TeamJoinRequestResponse.builder()
+                .requestId(request.getId())
+                .teamId(request.getTeam().getId())
+                .teamName(request.getTeam().getName())
+                .registrationId(request.getRegistration().getId())
+                .userId(request.getRegistration().getUser().getId())
+                .fullName(request.getRegistration().getUser().getFullName())
+                .email(request.getRegistration().getUser().getEmail())
+                .studentCode(studentCode)
+                .university(university)
+                .status(request.getStatus())
+                .createdAt(request.getCreatedAt())
+                .build();
     }
 
     @Override
