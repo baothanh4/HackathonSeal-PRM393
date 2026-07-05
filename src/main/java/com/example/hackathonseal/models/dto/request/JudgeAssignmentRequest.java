@@ -14,6 +14,7 @@ public class JudgeAssignmentRequest {
     @NotNull(message = "Round ID is required")
     private Long roundId;
 
+    @NotNull(message = "Category ID is required")
     private Long categoryId;
 
     @NotBlank(message = "Judge type is required")
