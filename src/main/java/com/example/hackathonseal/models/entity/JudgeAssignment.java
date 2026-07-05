@@ -28,7 +28,7 @@ public class JudgeAssignment {
     private Round round;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "track_id")
+    @JoinColumn(name = "track_id", nullable = false)
     private Category category;
 
     @Enumerated(EnumType.STRING)
