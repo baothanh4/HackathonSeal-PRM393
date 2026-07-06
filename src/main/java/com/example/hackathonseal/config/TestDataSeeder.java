@@ -22,6 +22,7 @@ import java.util.List;
 public class TestDataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final RoundRepository roundRepository;
@@ -94,6 +95,23 @@ public class TestDataSeeder implements CommandLineRunner {
                 .build();
 
         userRepository.saveAll(Arrays.asList(admin, judge1, judge2, studentA, studentB));
+
+        // Create User Profiles for students to avoid 404/NullPointer errors
+        UserProfile profileA = UserProfile.builder()
+                .user(studentA)
+                .participantType(ParticipantType.FPT_STUDENT)
+                .studentCode("SE160001")
+                .universityName("FPT University")
+                .build();
+
+        UserProfile profileB = UserProfile.builder()
+                .user(studentB)
+                .participantType(ParticipantType.FPT_STUDENT)
+                .studentCode("SE160002")
+                .universityName("FPT University")
+                .build();
+
+        userProfileRepository.saveAll(Arrays.asList(profileA, profileB));
 
         // 2. Create Event
         Event event = Event.builder()
